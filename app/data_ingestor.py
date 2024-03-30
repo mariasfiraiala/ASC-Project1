@@ -1,9 +1,20 @@
 import os
 import json
+import csv
 
 class DataIngestor:
     def __init__(self, csv_path: str):
-        # TODO: Read csv from csv_path
+        # Read csv from csv_path
+        with open(csv_path, 'r') as infile:
+            reader = list(csv.reader(infile))
+            entries = [[reader[i][4], reader[i][8], float(reader[i][11]), reader[i][30], reader[i][31]] for i in range(1, len(reader))]
+
+            d = {}
+            for i in range(len(entries)):
+                state, question, value, strat_category, strat = entries[i]
+                d.setdefault(question, {}).setdefault(state, {}).setdefault(strat_category, {}).setdefault(strat, []).append(value)
+
+            self.data = d
 
         self.questions_best_is_min = [
             'Percent of adults aged 18 years and older who have an overweight classification',
