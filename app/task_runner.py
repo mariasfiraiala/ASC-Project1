@@ -1,28 +1,31 @@
 from queue import Queue
 from threading import Thread, Event
 import time
+import os
+from jobs import Job
 
 class ThreadPool:
     def __init__(self):
-        # You must implement a ThreadPool of TaskRunners
-        # Your ThreadPool should check if an environment variable TP_NUM_OF_THREADS is defined
-        # If the env var is defined, that is the number of threads to be used by the thread pool
-        # Otherwise, you are to use what the hardware concurrency allows
-        # You are free to write your implementation as you see fit, but
-        # You must NOT:
-        #   * create more threads than the hardware concurrency allows
-        #   * recreate threads for each task
-        pass
+        self.jobs = Queue()
+        self.nr_threads = os.getenv("TP_NUM_OF_THREADS", os.cpu_count())
+        self.threads = [TaskRunner(self) for _ in range(self.nr_threads)]
+
+    def add_job(self, job : Job):
+        self.jobs.put(job)
+
+    def get_job(self) -> Job:
+        return self.jobs.get()
+    
 
 class TaskRunner(Thread):
-    def __init__(self):
-        # TODO: init necessary data structures
-        pass
+    def __init__(self, pool : ThreadPool):
+        super.__init__(self)
+        self.pool = pool
 
-    def run(self):
+    def run(self) -> None:
         while True:
-            # TODO
-            # Get pending job
-            # Execute the job and save the result to disk
-            # Repeat until graceful_shutdown
-            pass
+            job = self.pool.get_job()
+            job.func()
+
+            # execute job
+            # end job
