@@ -1,13 +1,17 @@
 from typing import Iterable
 from operator import itemgetter
 from data_ingestor import DataIngestor
-
+from functools import reduce
 
 class Job:
     def __init__(self, func : callable, id : int, *args):
         self.func = func
         self.id = id
         self.args = args
+
+
+def without_nan(d : dict):
+    return {k: v for k, v in d.items() if k != ''}
 
 
 def data_values(data : dict) -> Iterable[float]:
@@ -64,3 +68,26 @@ def state_diff_from_mean_func(question : str, state : str, data : DataIngestor) 
     state_mean = state_mean_func(question, state, data)
 
     return global_mean - state_mean
+
+
+def mean_by_category_func(question : str, data : DataIngestor) -> list:
+    data_states = data.data[question]
+
+    values = []
+    for state in data_states.keys():
+        state_values, state_total = state_mean_by_category(question, state, data)
+        values.append(([[state] + list_strat for list_strat in state_values], [state, state_total]))
+
+    return values
+
+
+def state_mean_by_category(question : str, state : str, data : dict) -> list:
+    data_without_nan = without_nan(data.data[question][state])
+
+    values = []
+    for strat_cat in data_without_nan.keys():
+        for strat in data_without_nan[strat_cat].keys():
+            values_list = data_without_nan[strat_cat][strat]
+            values.append([strat_cat, strat, sum(values_list) / len(values_list)])
+
+    return [values, reduce(lambda a, elem: a + elem[2], values, 0) / len(values)]
