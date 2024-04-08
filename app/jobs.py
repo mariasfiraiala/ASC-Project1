@@ -1,12 +1,13 @@
 from typing import Iterable
 from operator import itemgetter
-from data_ingestor import DataIngestor
+from app.data_ingestor import DataIngestor
 from functools import reduce
 
 class Job:
-    def __init__(self, func : callable, id : int, *args):
+    def __init__(self, func : callable, id : int, data : DataIngestor, *args):
         self.func = func
         self.id = id
+        self.data = data
         self.args = args
 
 
@@ -52,7 +53,8 @@ def worst5_func(question : str, data : DataIngestor) -> list:
 
 
 def global_mean_func(question : str, data : DataIngestor) -> float:
-    values = list(data_values(data.data))
+    data_states = data.data[question]
+    values = list(data_values(data_states))
 
     return sum(values) / len(values)
 
@@ -75,13 +77,13 @@ def mean_by_category_func(question : str, data : DataIngestor) -> list:
 
     values = []
     for state in data_states.keys():
-        state_values, state_total = state_mean_by_category(question, state, data)
+        state_values, state_total = state_mean_by_category_func(question, state, data)
         values.append(([[state] + list_strat for list_strat in state_values], [state, state_total]))
 
     return values
 
 
-def state_mean_by_category(question : str, state : str, data : dict) -> list:
+def state_mean_by_category_func(question : str, state : str, data : dict) -> list:
     data_without_nan = without_nan(data.data[question][state])
 
     values = []
