@@ -1,17 +1,20 @@
-import os
-import json
+"""Parser for input csv"""
+
+
 import csv
 
 class DataIngestor:
+    """Store needed info from csv in a nested dict"""
     def __init__(self, csv_path: str):
         # Read csv from csv_path
-        with open(csv_path, 'r') as infile:
+        with open(csv_path, 'r', encoding="utf-8") as infile:
             reader = list(csv.reader(infile))
-            entries = [[reader[i][4], reader[i][8], float(reader[i][11]), reader[i][30], reader[i][31]] for i in range(1, len(reader))]
+            entries = [[reader[i][4], reader[i][8], float(reader[i][11]), reader[i][30], reader[i][31]]
+                       for i in range(1, len(reader))]
 
             d = {}
-            for i in range(len(entries)):
-                state, question, value, strat_category, strat = entries[i]
+            for (_, e) in enumerate(entries):
+                state, question, value, strat_category, strat = e
                 d.setdefault(question, {}).setdefault(state, {}).setdefault(strat_category, {}).setdefault(strat, []).append(value)
 
             self.data = d

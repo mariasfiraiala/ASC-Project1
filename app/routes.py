@@ -1,9 +1,13 @@
-from app import webserver
-from flask import request, jsonify
+"""Routes for flask server"""
+
 
 import os
 import json
-from app.jobs import *
+from flask import request, jsonify
+from app import webserver
+from app.jobs import Job, states_mean_func, state_mean_func, best5_func
+from app.jobs import worst5_func, global_mean_func, diff_from_mean_func
+from app.jobs import state_diff_from_mean_func, mean_by_category_func, state_mean_by_category_func
 
 
 # Example endpoint definition
@@ -20,23 +24,24 @@ def post_endpoint():
 
         # Sending back a JSON response
         return jsonify(response)
-    else:
-        # Method Not Allowed
-        return jsonify({"error": "Method not allowed"}), 405
+    # Method Not Allowed
+    return jsonify({"error": "Method not allowed"}), 405
 
 
 @webserver.route('/api/get_results/<job_id>', methods=['GET'])
 def get_response(job_id):
+    """Gets result of given job id"""
+
     print(f"JobID is {job_id}")
     job_id = int(job_id)
-    # Check if job_id is valid
+
     if job_id < 1 or job_id >= webserver.job_counter:
         return jsonify({"status": "InvalidJobId"}), 400
 
     if webserver.tasks_runner.get_status(job_id) == "running":
         return jsonify({"status": "running"})
 
-    with open(os.path.join("results", f"job_id{job_id}.json"), "r") as fin:
+    with open(os.path.join("results", f"job_id{job_id}.json"), "r", encoding="utf-8") as fin:
         data = json.load(fin)
 
     return jsonify({"status": "done", "data": data})
@@ -44,10 +49,13 @@ def get_response(job_id):
 
 @webserver.route('/api/states_mean', methods=['POST'])
 def states_mean_request():
+    """Register states mean job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(states_mean_func, webserver.job_counter, webserver.data_ingestor, data["question"])
+    new_job = Job(states_mean_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -56,10 +64,13 @@ def states_mean_request():
 
 @webserver.route('/api/state_mean', methods=['POST'])
 def state_mean_request():
+    """Register state mean job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(state_mean_func, webserver.job_counter, webserver.data_ingestor, data["question"], data["state"])
+    new_job = Job(state_mean_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"], data["state"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -68,10 +79,13 @@ def state_mean_request():
 
 @webserver.route('/api/best5', methods=['POST'])
 def best5_request():
+    """Register best5 job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(best5_func, webserver.job_counter, webserver.data_ingestor, data["question"])
+    new_job = Job(best5_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -80,10 +94,13 @@ def best5_request():
 
 @webserver.route('/api/worst5', methods=['POST'])
 def worst5_request():
+    """Register worst5 job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(worst5_func, webserver.job_counter, webserver.data_ingestor, data["question"])
+    new_job = Job(worst5_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -92,10 +109,13 @@ def worst5_request():
 
 @webserver.route('/api/global_mean', methods=['POST'])
 def global_mean_request():
+    """Register global mean job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(global_mean_func, webserver.job_counter, webserver.data_ingestor, data["question"])
+    new_job = Job(global_mean_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -104,10 +124,13 @@ def global_mean_request():
 
 @webserver.route('/api/diff_from_mean', methods=['POST'])
 def diff_from_mean_request():
+    """Register diff from mean job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(diff_from_mean_func, webserver.job_counter, webserver.data_ingestor, data["question"])
+    new_job = Job(diff_from_mean_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -116,10 +139,13 @@ def diff_from_mean_request():
 
 @webserver.route('/api/state_diff_from_mean', methods=['POST'])
 def state_diff_from_mean_request():
+    """Register state diff from mean job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(state_diff_from_mean_func, webserver.job_counter, webserver.data_ingestor, data["question"], data["state"])
+    new_job = Job(state_diff_from_mean_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"], data["state"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -128,10 +154,13 @@ def state_diff_from_mean_request():
 
 @webserver.route('/api/mean_by_category', methods=['POST'])
 def mean_by_category_request():
+    """Register mean by category job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(mean_by_category_func, webserver.job_counter, webserver.data_ingestor, data["question"])
+    new_job = Job(mean_by_category_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -140,10 +169,13 @@ def mean_by_category_request():
 
 @webserver.route('/api/state_mean_by_category', methods=['POST'])
 def state_mean_by_category_request():
+    """Register state mean by category job"""
+
     data = request.json
     print(f"Got request {data}")
 
-    new_job = Job(state_mean_by_category_func, webserver.job_counter, webserver.data_ingestor, data["question"], data["state"])
+    new_job = Job(state_mean_by_category_func, webserver.job_counter, webserver.data_ingestor,
+                  data["question"], data["state"])
     webserver.tasks_runner.add_job(new_job)
     webserver.job_counter += 1
 
@@ -154,6 +186,8 @@ def state_mean_by_category_request():
 @webserver.route('/')
 @webserver.route('/index')
 def index():
+    """Get server usage"""
+
     routes = get_defined_routes()
     msg = f"Hello, World!\n Interact with the webserver using one of the defined routes:\n"
 
@@ -167,6 +201,8 @@ def index():
 
 
 def get_defined_routes():
+    """Get all server routes"""
+
     routes = []
     for rule in webserver.url_map.iter_rules():
         methods = ', '.join(rule.methods)
