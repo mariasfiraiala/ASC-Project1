@@ -2,6 +2,7 @@ from typing import Iterable
 from operator import itemgetter
 from app.data_ingestor import DataIngestor
 from functools import reduce
+from collections import OrderedDict
 
 class Job:
     def __init__(self, func : callable, id : int, data : DataIngestor, *args):
@@ -25,71 +26,95 @@ def data_values(data : dict) -> Iterable[float]:
             yield v
 
 
-def states_mean_func(question : str, data : DataIngestor) -> list:
+def _states_mean_func(question : str, data : DataIngestor) -> list:
     data_states = data.data[question]
 
-    return sorted([(state, state_mean_func(question, state, data)) for state in data_states.keys()], key=itemgetter(1))
+    return sorted([(state, _state_mean_func(question, state, data)) for state in data_states.keys()], key=itemgetter(1))
 
- 
-def state_mean_func(question : str, state : str, data : DataIngestor) -> float:
+
+def states_mean_func(question : str, data : DataIngestor) -> OrderedDict:
+    return OrderedDict(_states_mean_func(question, data))
+
+
+def _state_mean_func(question : str, state : str, data : DataIngestor) -> float:
     data_strats = data.data[question][state]
     values = list(data_values(data_strats))
 
     return sum(values) / len(values)
 
 
-def best5_func(question : str, data : DataIngestor) -> list:
+def state_mean_func(question : str, state : str, data : DataIngestor) -> dict:
+    return {state: _state_mean_func(question, state, data)}
+
+
+def best5_func(question : str, data : DataIngestor) -> OrderedDict:
     if question in data.questions_best_is_min:
-        return states_mean_func(question, data)[:5]
+        return OrderedDict(_states_mean_func(question, data)[:5])
 
-    return states_mean_func(question, data)[-5:]
+    return OrderedDict(reversed(_states_mean_func(question, data)[-5:]))
 
 
-def worst5_func(question : str, data : DataIngestor) -> list:
+def worst5_func(question : str, data : DataIngestor) -> OrderedDict:
     if question in data.questions_best_is_max:
-        return states_mean_func(question, data)[:5]
+        return OrderedDict(_states_mean_func(question, data)[:5])
 
-    return states_mean_func(question, data)[-5:]
+    return OrderedDict(reversed(_states_mean_func(question, data)[-5:]))
 
 
-def global_mean_func(question : str, data : DataIngestor) -> float:
+def _global_mean_func(question : str, data : DataIngestor) -> float:
     data_states = data.data[question]
     values = list(data_values(data_states))
 
     return sum(values) / len(values)
 
 
-def diff_from_mean_func(question : str, data : DataIngestor) -> list:
+def global_mean_func(question : str, data : DataIngestor) -> dict:
+    return {"global_mean": _global_mean_func(question, data)}
+
+
+def diff_from_mean_func(question : str, data : DataIngestor) -> dict:
     data_states = data.data[question]
 
-    return sorted([(state, state_diff_from_mean_func(question, state, data)) for state in data_states.keys()], key=itemgetter(1), reverse=True)
+    return {state: _state_diff_from_mean_func(question, state, data) for state in data_states.keys()}
 
 
-def state_diff_from_mean_func(question : str, state : str, data : DataIngestor) -> float:
-    global_mean = global_mean_func(question, data)
-    state_mean = state_mean_func(question, state, data)
+def _state_diff_from_mean_func(question : str, state : str, data : DataIngestor) -> float:
+    global_mean = _global_mean_func(question, data)
+    state_mean = _state_mean_func(question, state, data)
 
     return global_mean - state_mean
 
 
-def mean_by_category_func(question : str, data : DataIngestor) -> list:
+def state_diff_from_mean_func(question : str, state : str, data : DataIngestor) -> dict:
+    return {state: _state_diff_from_mean_func(question, state, data)}
+
+
+def mean_by_category_func(question : str, data : DataIngestor) -> dict:
     data_states = data.data[question]
 
-    values = []
+    values = {}
     for state in data_states.keys():
-        state_values, state_total = state_mean_by_category_func(question, state, data)
-        values.append(([[state] + list_strat for list_strat in state_values], [state, state_total]))
+        state_values = _state_mean_by_category_func(question, state, data)
+
+        for strat_cat, strat, value in state_values:
+            values[f'(\'{state}\', \'{strat_cat}\', \'{strat}\')'] = value
 
     return values
 
 
-def state_mean_by_category_func(question : str, state : str, data : dict) -> list:
+def _state_mean_by_category_func(question : str, state : str, data : dict) -> list:
     data_without_nan = without_nan(data.data[question][state])
 
     values = []
     for strat_cat in data_without_nan.keys():
         for strat in data_without_nan[strat_cat].keys():
             values_list = data_without_nan[strat_cat][strat]
-            values.append([strat_cat, strat, sum(values_list) / len(values_list)])
+            values.append((strat_cat, strat, sum(values_list) / len(values_list)))
 
-    return [values, reduce(lambda a, elem: a + elem[2], values, 0) / len(values)]
+    return values
+
+
+def state_mean_by_category_func(question : str, state : str, data : dict) -> dict:
+    values = _state_mean_by_category_func(question, state, data)
+
+    return {state: {f'(\'{strat_cat}\', \'{strat}\')': val for (strat_cat, strat, val) in values}}

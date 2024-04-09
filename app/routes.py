@@ -31,9 +31,15 @@ def get_response(job_id):
     job_id = int(job_id)
     # Check if job_id is valid
     if job_id < 1 or job_id >= webserver.job_counter:
-        return jsonify({'status': 'InvalidJobId'}), 400
+        return jsonify({"status": "InvalidJobId"}), 400
 
-    return jsonify(webserver.tasks_runner.get_status(job_id))
+    if webserver.tasks_runner.get_status(job_id) == "running":
+        return jsonify({"status": "running"})
+
+    with open(os.path.join("results", f"job_id{job_id}.json"), "r") as fin:
+        data = json.load(fin)
+
+    return jsonify({"status": "done", "data": data})
 
 
 @webserver.route('/api/states_mean', methods=['POST'])

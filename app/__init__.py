@@ -2,10 +2,10 @@ from flask import Flask
 from app.data_ingestor import DataIngestor
 from app.task_runner import ThreadPool
 
+
 webserver = Flask(__name__)
 webserver.tasks_runner = ThreadPool()
-
-# webserver.task_runner.start()
+webserver.json.sort_keys = False
 
 webserver.data_ingestor = DataIngestor("./nutrition_activity_obesity_usa_subset.csv")
 
