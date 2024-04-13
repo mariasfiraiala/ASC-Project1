@@ -39,7 +39,9 @@ def states_mean_request():
     new_job = Job(states_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -54,7 +56,9 @@ def state_mean_request():
     new_job = Job(state_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"], data["state"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -69,7 +73,9 @@ def best5_request():
     new_job = Job(best5_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -84,7 +90,9 @@ def worst5_request():
     new_job = Job(worst5_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -99,7 +107,9 @@ def global_mean_request():
     new_job = Job(global_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -114,7 +124,9 @@ def diff_from_mean_request():
     new_job = Job(diff_from_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -129,7 +141,9 @@ def state_diff_from_mean_request():
     new_job = Job(state_diff_from_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"], data["state"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -144,7 +158,9 @@ def mean_by_category_request():
     new_job = Job(mean_by_category_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
@@ -159,7 +175,9 @@ def state_mean_by_category_request():
     new_job = Job(state_mean_by_category_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"], data["state"])
     webserver.tasks_runner.add_job(new_job)
-    webserver.job_counter += 1
+
+    with webserver.id_lock:
+        webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
 
