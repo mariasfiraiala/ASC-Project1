@@ -42,8 +42,9 @@ class ThreadPool:
     def get_remaining_jobs(self) -> dict:
         """Get waiting and running jobs"""
         return {"num_jobs": countOf(self.status.values(), "running")}
-    
+
     def shutdown(self) -> None:
+        """Signal all threads to stop"""
         self.done.set()
 
         for t in self.threads:
@@ -63,9 +64,9 @@ class TaskRunner(Thread):
                 job = self.pool.get_job()
                 data = job.func(*job.args, job.data)
                 self.write_data(data, job.id)
-                self.pool.status[job.id] = "done"     
+                self.pool.status[job.id] = "done"
             except:
-                pass    
+                pass
 
     def write_data(self, data : dict | OrderedDict, id : int) -> None:
         """Write job result to file"""

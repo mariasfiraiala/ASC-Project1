@@ -3,6 +3,7 @@
 
 import os
 import json
+import logging
 from flask import request, jsonify
 from app import webserver
 from app.jobs import Job, states_mean_func, state_mean_func, best5_func
@@ -14,8 +15,8 @@ from app.jobs import state_diff_from_mean_func, mean_by_category_func, state_mea
 def get_response(job_id):
     """Gets result of given job id"""
 
-    print(f"JobID is {job_id}")
     job_id = int(job_id)
+    logging.info("Got request for job id %d", job_id)
 
     if job_id < 1 or job_id >= webserver.job_counter:
         return jsonify({"status": "InvalidJobId"}), 400
@@ -34,7 +35,7 @@ def states_mean_request():
     """Register states mean job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(states_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
@@ -51,7 +52,7 @@ def state_mean_request():
     """Register state mean job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(state_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"], data["state"])
@@ -68,7 +69,7 @@ def best5_request():
     """Register best5 job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(best5_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
@@ -85,7 +86,7 @@ def worst5_request():
     """Register worst5 job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(worst5_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
@@ -102,7 +103,7 @@ def global_mean_request():
     """Register global mean job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(global_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
@@ -119,7 +120,7 @@ def diff_from_mean_request():
     """Register diff from mean job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(diff_from_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
@@ -136,7 +137,7 @@ def state_diff_from_mean_request():
     """Register state diff from mean job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(state_diff_from_mean_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"], data["state"])
@@ -153,7 +154,7 @@ def mean_by_category_request():
     """Register mean by category job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(mean_by_category_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"])
@@ -170,7 +171,7 @@ def state_mean_by_category_request():
     """Register state mean by category job"""
 
     data = request.json
-    print(f"Got request {data}")
+    logging.info("Got request for job %s with input: %s", request.path, data)
 
     new_job = Job(state_mean_by_category_func, webserver.job_counter, webserver.data_ingestor,
                   data["question"], data["state"])
@@ -184,18 +185,28 @@ def state_mean_by_category_request():
 
 @webserver.route('/api/graceful_shutdown', methods=['GET'])
 def graceful_shutdown_request():
+    """Register graceful shutdown job"""
+
+    logging.info("Got request to shut down")
     webserver.tasks_runner.shutdown()
+    logging.info("Shutting down...")
     return jsonify({"shutdown": "True"})
 
 
 @webserver.route('/api/jobs', methods=['GET'])
 def jobs_request():
+    """Register jobs job"""
+
+    logging.info("Got request to print all jobs")
     return jsonify({"status": "done",
                     "data": webserver.tasks_runner.get_status_all(webserver.job_counter)})
 
 
 @webserver.route('/api/num_jobs', methods=['GET'])
 def num_jobs_request():
+    """Register num jobs job"""
+
+    logging.info("Got request to print all pending jobs")
     return jsonify(webserver.tasks_runner.get_remaining_jobs())
 
 
