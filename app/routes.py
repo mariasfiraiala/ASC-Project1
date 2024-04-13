@@ -10,24 +10,6 @@ from app.jobs import worst5_func, global_mean_func, diff_from_mean_func
 from app.jobs import state_diff_from_mean_func, mean_by_category_func, state_mean_by_category_func
 
 
-# Example endpoint definition
-@webserver.route('/api/post_endpoint', methods=['POST'])
-def post_endpoint():
-    if request.method == 'POST':
-        # Assuming the request contains JSON data
-        data = request.json
-        print(f"got data in post {data}")
-
-        # Process the received data
-        # For demonstration purposes, just echoing back the received data
-        response = {"message": "Received data successfully", "data": data}
-
-        # Sending back a JSON response
-        return jsonify(response)
-    # Method Not Allowed
-    return jsonify({"error": "Method not allowed"}), 405
-
-
 @webserver.route('/api/get_results/<job_id>', methods=['GET'])
 def get_response(job_id):
     """Gets result of given job id"""
@@ -180,6 +162,23 @@ def state_mean_by_category_request():
     webserver.job_counter += 1
 
     return jsonify({"job_id": new_job.id})
+
+
+@webserver.route('/api/graceful_shutdown', methods=['GET'])
+def graceful_shutdown_request():
+    webserver.tasks_runner.shutdown()
+    return jsonify({"shutdown": "True"})
+
+
+@webserver.route('/api/jobs', methods=['GET'])
+def jobs_request():
+    return jsonify({"status": "done",
+                    "data": webserver.tasks_runner.get_status_all(webserver.job_counter)})
+
+
+@webserver.route('/api/num_jobs', methods=['GET'])
+def num_jobs_request():
+    return jsonify(webserver.tasks_runner.get_remaining_jobs())
 
 
 # You can check localhost in your browser to see what this displays
